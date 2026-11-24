@@ -1,61 +1,75 @@
-# 🚀 Getting started with Strapi
+# vitalreit.com
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Monorepo for the Vital Infrastructure website.
 
-### `develop`
+| Folder | App | Local URL | Hosted on |
+| --- | --- | --- | --- |
+| [`cms/`](cms/) | Strapi 5 (TypeScript) | http://localhost:1337/admin | Strapi Cloud (base directory `/cms`) |
+| [`web/`](web/) | Next.js App Router (TypeScript) | http://localhost:3000 | Vercel (root directory `/web`) |
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+The two apps are independent: each has its own `package.json`, `package-lock.json` and `node_modules`. The root `package.json` only holds convenience scripts and has no dependencies, so there is nothing to install at the root.
 
+## Prerequisites
+
+- Node.js 22 or 24 (LTS). Strapi supports Node 22–26.
+- npm 10 or later.
+
+> **npm 12 note:** npm 12 blocks dependency install scripts unless they are approved. The approvals Strapi needs (`better-sqlite3`, `esbuild`, `@swc/core`) are recorded under `allowScripts` in `cms/package.json`, so `npm install` works without prompts. If an upgrade changes those versions, run `npm install-scripts ls` in `cms/` and approve the new versions.
+
+## First-time setup
+
+```sh
+# 1. Install dependencies for both apps
+npm run install:all
+
+# 2. Create the Strapi env file and fill in each secret
+cp cms/.env.example cms/.env
+#    Generate a value for each secret (APP_KEYS needs two, comma-separated):
+#    node -e "console.log(require('crypto').randomBytes(16).toString('base64'))"
+
+# 3. Create the Next.js env file
+cp web/.env.example web/.env.local
+#    STRAPI_URL=http://localhost:1337
+#    STRAPI_API_TOKEN, REVALIDATE_SECRET and PREVIEW_SECRET can stay empty until later phases.
 ```
+
+`.env` and `.env.local` are git-ignored. Never commit real values; keep the `.env.example` files up to date with variable names only.
+
+## Running locally
+
+Run each app in its own terminal.
+
+**Strapi** (from `cms/`, or `npm run dev:cms` from the root):
+
+```sh
+cd cms
 npm run develop
-# or
-yarn develop
 ```
 
-### `start`
+Open http://localhost:1337/admin. On the first run, Strapi asks you to create a local admin user. Local data is stored in SQLite at `cms/.tmp/data.db` (git-ignored). To start from an empty database, stop Strapi and delete that file.
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+**Next.js** (from `web/`, or `npm run dev:web` from the root):
 
+```sh
+cd web
+npm run dev
 ```
-npm run start
-# or
-yarn start
-```
 
-### `build`
+Open http://localhost:3000.
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+## Lint, type-check and build
 
-```
+From the repo root (runs both apps, `cms` first):
+
+```sh
+npm run lint
+npm run typecheck
 npm run build
-# or
-yarn build
+npm run check      # all three
 ```
 
-## ⚙️ Deployment
+Or run `npm run lint`, `npm run typecheck` or `npm run build` inside `cms/` or `web/` for a single app.
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+## Working rules
 
-```
-yarn strapi deploy
-```
-
-## 📚 Learn more
-
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
-
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
-
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+See [`CLAUDE.md`](CLAUDE.md). Work happens on `phase-N-<short-name>` branches, through pull requests that are reviewed and merged by hand.
